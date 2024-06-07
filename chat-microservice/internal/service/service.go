@@ -36,7 +36,6 @@ func (s *MessagerService) SaveMessage(content []byte, author string) (models.Mes
 	if err != nil {
 		return models.Message{}, err
 	}
-	log.Println("Message stored successfully")
-
+	
 	return message, nil
 }

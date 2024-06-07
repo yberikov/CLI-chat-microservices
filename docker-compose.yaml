@@ -8,6 +8,7 @@ services:
       - "8080:8080"
     depends_on:
       - kafka1
+      - redis
     environment:
       - CONFIG_PATH=config/config.yaml
 

@@ -44,22 +44,21 @@ func NewProducer(logger *slog.Logger, cfg *internalConfig.Config, ch chan models
 }
 
 func (p *Producer) RunProducing(ctx context.Context, wg *sync.WaitGroup) {
-	go func() {
-		defer wg.Done()
+	defer wg.Done()
 
-		for {
-			select {
-			case <-ctx.Done():
-				return
-			case message := <-p.ch:
-				p.prd.Input() <- &sarama.ProducerMessage{
-					Topic: p.cfg.Topic,
-					Key:   sarama.ByteEncoder(message.Author),
-					Value: sarama.ByteEncoder(message.Text),
-				}
-				p.log.Info("Message produced:")
+	for {
+		select {
+		case <-ctx.Done():
+			return
+		case message := <-p.ch:
+			p.prd.Input() <- &sarama.ProducerMessage{
+				Topic: p.cfg.Topic,
+				Key:   sarama.ByteEncoder(message.Author),
+				Value: sarama.ByteEncoder(message.Text),
 			}
-
+			p.log.Info("Message produced:")
 		}
-	}()
+
+	}
+
 }

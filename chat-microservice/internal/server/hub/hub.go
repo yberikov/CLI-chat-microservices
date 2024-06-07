@@ -3,7 +3,9 @@ package hub
 import (
 	"chat/internal/domain/models"
 	"chat/internal/service"
+	"context"
 	"log/slog"
+	"sync"
 )
 
 type Hub struct {
@@ -24,7 +26,7 @@ type Hub struct {
 	Log     *slog.Logger
 }
 
-func NewHub(service *service.MessagerService, log *slog.Logger) *Hub {
+func NewHub(log *slog.Logger, service *service.MessagerService) *Hub {
 	return &Hub{
 		Broadcast:  make(chan models.Message),
 		Register:   make(chan *Client),
@@ -36,9 +38,12 @@ func NewHub(service *service.MessagerService, log *slog.Logger) *Hub {
 	}
 }
 
-func (h *Hub) Run() {
+func (h *Hub) Run(ctx context.Context, wg *sync.WaitGroup) {
+	defer wg.Done()
 	for {
 		select {
+		case <-ctx.Done():
+			return
 		case user := <-h.Register:
 			h.Log.Info("New user connected:", slog.String("username", user.Username))
 			h.Clients[user] = true
