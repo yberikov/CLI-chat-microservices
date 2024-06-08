@@ -1,5 +1,8 @@
 package storage
 
+import "chat/internal/domain/models"
+
 type Messager interface {
-	SaveMessage(msg string, author string) error
+	SaveMessage(models.Message) error
+	GetMessages() ([]models.Message, error)
 }

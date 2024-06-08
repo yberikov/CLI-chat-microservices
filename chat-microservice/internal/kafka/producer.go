@@ -56,7 +56,6 @@ func (p *Producer) RunProducing(ctx context.Context, wg *sync.WaitGroup) {
 				Key:   sarama.ByteEncoder(message.Author),
 				Value: sarama.ByteEncoder(message.Text),
 			}
-			p.log.Info("Message produced:")
 		}
 
 	}

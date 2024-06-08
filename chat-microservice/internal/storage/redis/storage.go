@@ -1,36 +1,93 @@
 package redis
 
 import (
+	"chat/internal/domain/models"
 	"context"
+	"encoding/json"
 	"fmt"
 	"github.com/redis/go-redis/v9"
 	"log"
-	"time"
 )
 
 type MessageStorage struct {
 	client *redis.Client
 }
 
-func New(url string) (*MessageStorage, error) {
+func New(addr string) (*MessageStorage, error) {
 	//TODO redis configuration
 	rdb := redis.NewClient(&redis.Options{
-		Addr: url,
+		Addr: addr,
 	})
 
-	status, err := rdb.Ping(context.TODO()).Result()
+	_, err := rdb.Ping(context.TODO()).Result()
 	if err != nil {
 		log.Fatalln("Redis connection was refused")
 	}
-	fmt.Println(status)
 	return &MessageStorage{
 		client: rdb,
 	}, nil
 }
 
-func (c *MessageStorage) SaveMessage(msg string, author string) error {
-	c.client.Set(context.TODO(), msg, author, time.Hour)
+func (c *MessageStorage) SaveMessage(message models.Message) error {
+	ctx := context.Background()
+	// Generate a new incrementing key
+	newKey, err := c.client.Incr(ctx, "message_key").Result()
+	if err != nil {
+		return err
+	}
+
+	// Serialize the message to JSON
+	jsonData, err := json.Marshal(message)
+	if err != nil {
+		return err
+	}
+
+	// Store the message with the new key
+	messageKey := fmt.Sprintf("message:%d", newKey)
+	err = c.client.Set(ctx, messageKey, jsonData, 0).Err()
+	if err != nil {
+		return err
+	}
+
+	// Add the new key to the list of message keys
+	err = c.client.LPush(ctx, "message_keys", messageKey).Err()
+	if err != nil {
+		return err
+	}
+
+	// Trim the list to only keep the last 10 keys
+	err = c.client.LTrim(ctx, "message_keys", 0, 9).Err()
+	if err != nil {
+		return err
+	}
+
 	return nil
+}
+
+func (c *MessageStorage) GetMessages() ([]models.Message, error) {
+	ctx := context.Background()
+	// Retrieve the last 10 message keys
+	keys, err := c.client.LRange(ctx, "message_keys", 0, 9).Result()
+	if err != nil {
+		return nil, err
+	}
+
+	var messages []models.Message
+	for _, key := range keys {
+		jsonData, err := c.client.Get(ctx, key).Result()
+		if err != nil {
+			return nil, err
+		}
+
+		var msg models.Message
+		err = json.Unmarshal([]byte(jsonData), &msg)
+		if err != nil {
+			return nil, err
+		}
+		messages = append(messages, msg)
+	}
+
+	return messages, nil
 }
 
 func (c *MessageStorage) Close() error {

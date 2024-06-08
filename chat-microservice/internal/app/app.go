@@ -7,6 +7,7 @@ import (
 	"chat/internal/server"
 	"chat/internal/server/hub"
 	service2 "chat/internal/service"
+	"chat/internal/storage/redis"
 	"context"
 	"log/slog"
 	"net/http"
@@ -23,7 +24,11 @@ type App struct {
 
 func New(log *slog.Logger, cfg *config.Config) *App {
 	kafkaCh := make(chan models.Message)
-	service := service2.NewService(kafkaCh, cfg.StoragePath)
+	storage, err := redis.New(cfg.StoragePath)
+	if err != nil {
+		panic(err)
+	}
+	service := service2.NewService(kafkaCh, storage)
 	h := hub.NewHub(log, service)
 
 	return &App{

@@ -4,7 +4,6 @@ import (
 	"chat/internal/domain/models"
 	"chat/internal/server/hub"
 	"github.com/gorilla/websocket"
-	"log"
 	"log/slog"
 	"net/http"
 	"strings"
@@ -16,7 +15,6 @@ var upgrader = websocket.Upgrader{
 }
 
 func HandleWebSocket(h *hub.Hub, w http.ResponseWriter, r *http.Request) {
-	log.Println("New connection request")
 	conn, err := upgrader.Upgrade(w, r, nil)
 	if err != nil {
 		h.Log.Error("Error on upgrading connection", slog.String("err", err.Error()))
@@ -34,8 +32,11 @@ func HandleWebSocket(h *hub.Hub, w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	clientName := strings.TrimSpace(string(username))
-
-	for _, message := range h.Cache {
+	cache, err := h.Service.GetMessages()
+	if err != nil {
+		h.Log.Error("error on getting cache:", slog.String("err", err.Error()))
+	}
+	for _, message := range cache {
 		toSend := message.Author + ": " + string(message.Text)
 		if err := conn.WriteMessage(websocket.TextMessage, []byte(toSend)); err != nil {
 			h.Log.Error("Error on sending message of requesting username", err)
