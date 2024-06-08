@@ -2,40 +2,39 @@ package main
 
 import (
 	"context"
-	"github.com/IBM/sarama"
+	"hw3/internal/app"
 	"hw3/internal/config"
-	"hw3/internal/kafka"
-	service2 "hw3/internal/services"
-	"log"
 	"log/slog"
 	"os"
 	"os/signal"
-	"sync"
 	"syscall"
+	"time"
 )
 
 func main() {
 	cfg := config.MustLoad()
-
-	sarama.Logger = log.New(os.Stdout, "[sarama]", log.LstdFlags)
 	logger := slog.New(slog.NewTextHandler(os.Stdout, nil))
 
-	logger.Info("Storage-microservice started")
-	service := service2.NewService(cfg.StoragePath)
+	application := app.New(logger, cfg)
+
+	logger.Info("starting storage-server", slog.String("address", cfg.Address))
+
 	ctx, cancel := context.WithCancel(context.Background())
-	wg := &sync.WaitGroup{}
-	consumer, err := kafka.RunConsumer(ctx, wg, cfg.Brokers, service)
-	if err != nil {
-		log.Fatalln(err)
-	}
+
+	go application.Run(ctx)
+
 	done := make(chan os.Signal, 1)
 	signal.Notify(done, os.Interrupt, syscall.SIGINT, syscall.SIGTERM)
 
 	<-done
-	logger.Info("stopping server")
-
+	logger.Info("stopping server: releasing all resources")
 	cancel()
-	wg.Wait()
-	err = consumer.Close()
-	logger.Info("server stopped")
+
+	shutdownCtx, shutdownCancel := context.WithTimeout(ctx, time.Second*5)
+	defer shutdownCancel()
+	if err := application.Stop(shutdownCtx); err != nil {
+		logger.Error("failed to gracefully stop server", slog.String("error", err.Error()))
+	}
+
+	logger.Info("server gracefully stopped")
 }

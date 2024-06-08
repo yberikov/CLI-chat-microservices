@@ -1,5 +1,4 @@
 env: "local"
-storage_path: "postgres://postgres:12345@postgres:5432/postgres?sslmode=disable"
 address: "0.0.0.0:8081"
 timeout: 5s
 brokers: "kafka1:19092"

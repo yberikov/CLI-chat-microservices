@@ -17,7 +17,7 @@ func main() {
 
 	application := app.New(logger, cfg)
 
-	logger.Info("starting server", slog.String("address", cfg.Address))
+	logger.Info("starting chat-server", slog.String("address", cfg.Address))
 
 	ctx, cancel := context.WithCancel(context.Background())
 

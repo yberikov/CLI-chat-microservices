@@ -7,6 +7,7 @@ import (
 	"github.com/IBM/sarama"
 	service "hw3/internal/services"
 	"log"
+	"os"
 	"strings"
 	"sync"
 )
@@ -51,6 +52,7 @@ func (consumer *Consumer) ConsumeClaim(session sarama.ConsumerGroupSession, clai
 }
 
 func InitConsumerConfig() *sarama.Config {
+	sarama.Logger = log.New(os.Stdout, "[sarama]", log.LstdFlags)
 	config := sarama.NewConfig()
 	config.Version = sarama.DefaultVersion
 	config.Consumer.Group.Rebalance.GroupStrategies = []sarama.BalanceStrategy{sarama.NewBalanceStrategyRoundRobin()}

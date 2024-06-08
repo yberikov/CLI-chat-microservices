@@ -3,6 +3,7 @@ package postgres
 import (
 	"context"
 	"github.com/jackc/pgx/v5"
+	"hw3/internal/domain/models"
 )
 
 type MessageStorage struct {
@@ -32,6 +33,28 @@ func New(url string) (*MessageStorage, error) {
 func (c *MessageStorage) SaveMessage(msg string, author string) error {
 	_, err := c.db.Exec(context.Background(), "INSERT INTO messages (text, author) VALUES ($1, $2)", msg, author)
 	return err
+}
+
+func (c *MessageStorage) GetLastMessages(n int) ([]models.Message, error) {
+	rows, err := c.db.Query(context.Background(), "SELECT text, author FROM messages ORDER BY id DESC LIMIT $1", n)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	var messages []models.Message
+	for rows.Next() {
+		var msg, author string
+		if err := rows.Scan(&msg, &author); err != nil {
+			return nil, err
+		}
+		messages = append(messages, models.Message{Text: []byte(msg), Author: author})
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+
+	return messages, nil
 }
 
 func (c *MessageStorage) Close() error {

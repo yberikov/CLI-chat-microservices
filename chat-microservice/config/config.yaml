@@ -1,6 +1,7 @@
 env: "local"
 storage_path: "redis:6379"
 address: "0.0.0.0:8080"
+storage_microservice_addr: "http://storage-microservice:8081/getMessages"
 timeout: 5s
 brokers: "kafka1:19092"
 topic: "messages"

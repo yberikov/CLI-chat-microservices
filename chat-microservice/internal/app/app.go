@@ -20,6 +20,7 @@ type App struct {
 	kafkaCh chan models.Message
 	hub     *hub.Hub
 	server  *http.Server
+	service *service2.MessagerService
 }
 
 func New(log *slog.Logger, cfg *config.Config) *App {
@@ -28,6 +29,7 @@ func New(log *slog.Logger, cfg *config.Config) *App {
 	if err != nil {
 		panic(err)
 	}
+
 	service := service2.NewService(kafkaCh, storage)
 	h := hub.NewHub(log, service)
 
@@ -37,11 +39,15 @@ func New(log *slog.Logger, cfg *config.Config) *App {
 		kafkaCh: kafkaCh,
 		hub:     h,
 		server:  server.New(cfg, h),
+		service: service,
 	}
 }
 
 func (a *App) Run(ctx context.Context) {
-
+	err := a.service.FillCacheFromService(a.cfg.StorageMicroSrvAddr)
+	if err != nil {
+		a.log.Error("error on filling the cache", err)
+	}
 	wg := &sync.WaitGroup{}
 
 	wg.Add(1)

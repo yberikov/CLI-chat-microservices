@@ -42,3 +42,11 @@ func (s *MessagerService) GetMessages() ([]models.Message, error) {
 	slices.Reverse(messages)
 	return messages, nil
 }
+
+func (s *MessagerService) FillCacheFromService(serviceURL string) error {
+	err := s.messager.FillCacheFromService(serviceURL)
+	if err != nil {
+		return err
+	}
+	return nil
+}

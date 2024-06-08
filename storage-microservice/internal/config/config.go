@@ -2,6 +2,7 @@ package config
 
 import (
 	"flag"
+	"fmt"
 	"os"
 	"time"
 
@@ -10,7 +11,7 @@ import (
 
 type Config struct {
 	Env         string        `yaml:"env" env-default:"local"`
-	StoragePath string        `yaml:"storage_path" env-required:"true"`
+	StoragePath string        `yaml:"storage_path"`
 	Address     string        `yaml:"address"`
 	Timeout     time.Duration `yaml:"timeout"`
 	Brokers     string        `yaml:"brokers"`
@@ -35,7 +36,15 @@ func MustLoadPath(configPath string) *Config {
 	if err := cleanenv.ReadConfig(configPath, &cfg); err != nil {
 		panic("cannot read config: " + err.Error())
 	}
+	host := os.Getenv("POSTGRES_HOST")
+	port := os.Getenv("POSTGRES_PORT")
+	user := os.Getenv("POSTGRES_USER")
+	password := os.Getenv("POSTGRES_PASSWORD")
+	dbName := os.Getenv("POSTGRES_DB")
 
+	// Construct the PostgreSQL connection URL
+	url := fmt.Sprintf("postgres://%s:%s@%s:%s/%s", user, password, host, port, dbName)
+	cfg.StoragePath = url
 	return &cfg
 }
 

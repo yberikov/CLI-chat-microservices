@@ -9,12 +9,13 @@ import (
 )
 
 type Config struct {
-	Env         string        `yaml:"env" env-default:"local"`
-	StoragePath string        `yaml:"storage_path" env-required:"true"`
-	Address     string        `yaml:"address"`
-	Timeout     time.Duration `yaml:"timeout"`
-	Brokers     string        `yaml:"brokers"`
-	Topic       string        `yaml:"topic"`
+	Env                 string        `yaml:"env" env-default:"local"`
+	StoragePath         string        `yaml:"storage_path" env-required:"true"`
+	Address             string        `yaml:"address"`
+	Timeout             time.Duration `yaml:"timeout"`
+	Brokers             string        `yaml:"brokers"`
+	Topic               string        `yaml:"topic"`
+	StorageMicroSrvAddr string        `yaml:"storage_microservice_addr"`
 }
 
 func MustLoad() *Config {

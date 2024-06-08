@@ -53,6 +53,7 @@ services:
   storage-microservice:
     build: storage-microservice
     container_name: storage-microservice
+    hostname: storage-microservice
     ports:
       - "8081:8081"
     depends_on:
@@ -62,9 +63,9 @@ services:
       - CONFIG_PATH=config/config.yaml
       - POSTGRES_HOST=postgres
       - POSTGRES_PORT=5432
-      - POSTGRES_USER=postgres
+      - POSTGRES_USER=user
       - POSTGRES_PASSWORD=12345
-      - POSTGRES_DB=postgres
+      - POSTGRES_DB=chat
 
 
   postgres:
@@ -72,14 +73,14 @@ services:
     shm_size: 128mb
 
     environment:
-      - POSTGRES_USER=postgres
+      - POSTGRES_USER=user
       - POSTGRES_PASSWORD=12345
-      - POSTGRES_DB=postgres
+      - POSTGRES_DB=chat
 
     ports:
-      - "5433:5432"
+      - "5434:5432"
     image: postgres:latest
-    hostname: postgres1
+    hostname: postgres
     container_name: postgres
 
 

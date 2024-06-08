@@ -6,7 +6,8 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/redis/go-redis/v9"
-	"log"
+	"net/http"
+	"slices"
 )
 
 type MessageStorage struct {
@@ -21,11 +22,37 @@ func New(addr string) (*MessageStorage, error) {
 
 	_, err := rdb.Ping(context.TODO()).Result()
 	if err != nil {
-		log.Fatalln("Redis connection was refused")
+		return nil, err
 	}
+
 	return &MessageStorage{
 		client: rdb,
 	}, nil
+}
+
+func (c *MessageStorage) FillCacheFromService(serviceURL string) error {
+	resp, err := http.Get(serviceURL)
+	if err != nil {
+		return err
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode != http.StatusOK {
+		return fmt.Errorf("failed to get messages: %s", resp.Status)
+	}
+
+	var messages []models.Message
+	if err := json.NewDecoder(resp.Body).Decode(&messages); err != nil {
+		return err
+	}
+	slices.Reverse(messages)
+	for _, message := range messages {
+		if err := c.SaveMessage(message); err != nil {
+			return err
+		}
+	}
+
+	return nil
 }
 
 func (c *MessageStorage) SaveMessage(message models.Message) error {
