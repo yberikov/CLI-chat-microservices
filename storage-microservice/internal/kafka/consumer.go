@@ -67,7 +67,7 @@ var (
 
 func RunConsumer(ctx context.Context, wg *sync.WaitGroup, brokers string, service *service.MessagerService) (sarama.ConsumerGroup, error) {
 	consumer := NewConsumer(func(message *sarama.ConsumerMessage) error {
-		_, err := service.SaveMessage(message.Value, string(message.Key))
+		_, err := service.SaveMessage(message.Value)
 		if err != nil {
 			return err
 		}

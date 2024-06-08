@@ -46,9 +46,26 @@ services:
       KAFKA_JMX_HOSTNAME: ${DOCKER_HOST_IP:-127.0.0.1}
       KAFKA_AUTHORIZER_CLASS_NAME: kafka.security.authorizer.AclAuthorizer
       KAFKA_ALLOW_EVERYONE_IF_NO_ACL_FOUND: "true"
+      KAFKA_CREATE_TOPICS: "test:6:1"
     depends_on:
       - zoo1
 
+  init-kafka-container:
+    image: confluentinc/cp-kafka:7.3.2
+    container_name: kafka-setup
+    depends_on:
+      - kafka1
+    entrypoint: [ '/bin/sh', '-c' ]
+    command: |
+      "
+
+      kafka-topics --bootstrap-server kafka1:19092 --list
+      
+      # create init topics
+      kafka-topics --create --partitions 6 --bootstrap-server kafka1:19092 --topic messages
+      "
+  
+  
 
   storage-microservice:
     build: storage-microservice

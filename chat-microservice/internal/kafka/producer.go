@@ -4,6 +4,7 @@ import (
 	internalConfig "chat/internal/config"
 	"chat/internal/domain/models"
 	"context"
+	"encoding/json"
 	"github.com/IBM/sarama"
 	"log"
 	"log/slog"
@@ -29,6 +30,7 @@ func NewProducer(logger *slog.Logger, cfg *internalConfig.Config, ch chan models
 	config.Producer.RequiredAcks = sarama.WaitForLocal
 	config.Producer.Compression = sarama.CompressionSnappy
 	config.Producer.Flush.Frequency = 500 * time.Millisecond
+	config.Producer.Partitioner = sarama.NewRoundRobinPartitioner
 
 	producer, err := sarama.NewAsyncProducer(strings.Split(cfg.Brokers, ","), config)
 	if err != nil {
@@ -51,10 +53,14 @@ func (p *Producer) RunProducing(ctx context.Context, wg *sync.WaitGroup) {
 		case <-ctx.Done():
 			return
 		case message := <-p.ch:
+			jsonData, err := json.Marshal(message)
+			if err != nil {
+				p.log.Error("Failed to marshal message:", err)
+				continue
+			}
 			p.prd.Input() <- &sarama.ProducerMessage{
 				Topic: p.cfg.Topic,
-				Key:   sarama.ByteEncoder(message.Author),
-				Value: sarama.ByteEncoder(message.Text),
+				Value: sarama.ByteEncoder(jsonData),
 			}
 		}
 
