@@ -17,17 +17,38 @@ jobs:
         with:
           go-version: "stable"
 
-      - name: Build
+      - name: Build chat-microservice
         run: |
+          cd chat-microservice
           go mod tidy
           go build -v ./...
 
-      - name: Lint
+      - name: Lint chat-microservice
         uses: golangci/golangci-lint-action@v4
         with:
           version: latest
+          args: --config=./chat-microservice/.golangci.yml
 
-      - name: Test
+      - name: Test chat-microservice
         run: |
+          cd chat-microservice
+          go mod tidy
+          go test -v -race -coverpkg=./... ./...
+
+      - name: Build storage-microservice
+        run: |
+          cd storage-microservice
+          go mod tidy
+          go build -v ./...
+
+      - name: Lint storage-microservice
+        uses: golangci/golangci-lint-action@v4
+        with:
+          version: latest
+          args: --config=./storage-microservice/.golangci.yml
+
+      - name: Test storage-microservice
+        run: |
+          cd storage-microservice
           go mod tidy
           go test -v -race -coverpkg=./... ./...
