@@ -1,16 +1,7 @@
 version: '2.1'
 
 services:
-  chat-microservice:
-    build: chat-microservice
-    container_name: chat-microservice
-    ports:
-      - "8080:8080"
-    depends_on:
-      - kafka1
-      - redis
-    environment:
-      - CONFIG_PATH=config/config.yaml
+
 
   zoo1:
     image: confluentinc/cp-zookeeper:7.3.2
@@ -46,15 +37,16 @@ services:
       KAFKA_JMX_HOSTNAME: ${DOCKER_HOST_IP:-127.0.0.1}
       KAFKA_AUTHORIZER_CLASS_NAME: kafka.security.authorizer.AclAuthorizer
       KAFKA_ALLOW_EVERYONE_IF_NO_ACL_FOUND: "true"
-      KAFKA_CREATE_TOPICS: "test:6:1"
     depends_on:
-      - zoo1
+      zoo1:
+          condition: service_started
 
   init-kafka-container:
     image: confluentinc/cp-kafka:7.3.2
     container_name: kafka-setup
     depends_on:
-      - kafka1
+      kafka1:
+        condition: service_started
     entrypoint: [ '/bin/sh', '-c' ]
     command: |
       "
@@ -74,8 +66,10 @@ services:
     ports:
       - "8081:8081"
     depends_on:
-      - kafka1
-      - postgres
+      kafka1:
+         condition: service_started
+      postgres:
+        condition: service_healthy
     environment:
       - CONFIG_PATH=config/config.yaml
       - POSTGRES_HOST=postgres
@@ -88,7 +82,11 @@ services:
   postgres:
     restart: always
     shm_size: 128mb
-
+    healthcheck:
+      test: [ "CMD", "pg_isready", "-q", "-d", "postgres", "-U", "user", "-h", "localhost" ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
     environment:
       - POSTGRES_USER=user
       - POSTGRES_PASSWORD=12345
@@ -116,3 +114,17 @@ services:
       - REDIS_PORT=6379
       - REDIS_DATABASES=16
 
+  chat-microservice:
+    build: chat-microservice
+    container_name: chat-microservice
+    ports:
+      - "8080:8080"
+    depends_on:
+      kafka1:
+        condition: service_started
+      redis:
+        condition: service_started
+      storage-microservice:
+        condition: service_started
+    environment:
+      - CONFIG_PATH=config/config.yaml

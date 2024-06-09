@@ -2,13 +2,14 @@ package main
 
 import (
 	"context"
-	"hw3/internal/app"
-	"hw3/internal/config"
 	"log/slog"
 	"os"
 	"os/signal"
 	"syscall"
 	"time"
+
+	"hw3/internal/app"
+	"hw3/internal/config"
 )
 
 func main() {

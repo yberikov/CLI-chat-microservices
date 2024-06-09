@@ -1,17 +1,19 @@
 package kafka
 
 import (
-	internalConfig "chat/internal/config"
-	"chat/internal/domain/models"
 	"context"
 	"encoding/json"
-	"github.com/IBM/sarama"
 	"log"
 	"log/slog"
 	"os"
 	"strings"
 	"sync"
 	"time"
+
+	internalConfig "chat/internal/config"
+	"chat/internal/domain/models"
+
+	"github.com/IBM/sarama"
 )
 
 type Producer struct {
@@ -22,7 +24,7 @@ type Producer struct {
 }
 
 func NewProducer(logger *slog.Logger, cfg *internalConfig.Config, ch chan models.Message) Producer {
-	//TODO kafka configuration
+	// TODO kafka configuration
 	sarama.Logger = log.New(os.Stdout, "[sarama] ", log.LstdFlags)
 	config := sarama.NewConfig()
 	config.Version = sarama.DefaultVersion
@@ -34,7 +36,7 @@ func NewProducer(logger *slog.Logger, cfg *internalConfig.Config, ch chan models
 
 	producer, err := sarama.NewAsyncProducer(strings.Split(cfg.Brokers, ","), config)
 	if err != nil {
-		logger.Error("Failed to start Sarama producer:", err)
+		logger.Error("Failed to start Sarama producer:", slog.String("err", err.Error()))
 	}
 
 	return Producer{
@@ -55,7 +57,7 @@ func (p *Producer) RunProducing(ctx context.Context, wg *sync.WaitGroup) {
 		case message := <-p.ch:
 			jsonData, err := json.Marshal(message)
 			if err != nil {
-				p.log.Error("Failed to marshal message:", err)
+				p.log.Error("Failed to marshal message:", slog.String("err", err.Error()))
 				continue
 			}
 			p.prd.Input() <- &sarama.ProducerMessage{
@@ -63,7 +65,5 @@ func (p *Producer) RunProducing(ctx context.Context, wg *sync.WaitGroup) {
 				Value: sarama.ByteEncoder(jsonData),
 			}
 		}
-
 	}
-
 }

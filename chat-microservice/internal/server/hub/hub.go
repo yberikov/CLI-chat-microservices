@@ -1,11 +1,12 @@
 package hub
 
 import (
-	"chat/internal/domain/models"
-	"chat/internal/service"
 	"context"
 	"log/slog"
 	"sync"
+
+	"chat/internal/domain/models"
+	"chat/internal/service"
 )
 
 type Hub struct {

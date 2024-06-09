@@ -2,6 +2,7 @@ package postgres
 
 import (
 	"context"
+
 	"github.com/jackc/pgx/v5"
 	"hw3/internal/domain/models"
 )
@@ -12,7 +13,6 @@ type MessageStorage struct {
 
 // New creates a new SQL connection.
 func New(url string) (*MessageStorage, error) {
-
 	conn, err := pgx.Connect(context.Background(), url)
 	if err != nil {
 		return nil, err
@@ -30,7 +30,7 @@ func New(url string) (*MessageStorage, error) {
 	return &MessageStorage{db: conn}, nil
 }
 
-func (c *MessageStorage) SaveMessage(msg string, author string) error {
+func (c *MessageStorage) SaveMessage(msg, author string) error {
 	_, err := c.db.Exec(context.Background(), "INSERT INTO messages (text, author) VALUES ($1, $2)", msg, author)
 	return err
 }

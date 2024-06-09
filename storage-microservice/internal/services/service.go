@@ -3,9 +3,10 @@ package service
 import (
 	"bytes"
 	"encoding/json"
+	"log"
+
 	"hw3/internal/domain/models"
 	"hw3/internal/storage"
-	"log"
 )
 
 var (

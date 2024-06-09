@@ -15,6 +15,7 @@ type Config struct {
 	Address     string        `yaml:"address"`
 	Timeout     time.Duration `yaml:"timeout"`
 	Brokers     string        `yaml:"brokers"`
+	Topic       string        `yaml:"topic"`
 }
 
 func MustLoad() *Config {

@@ -1,9 +1,10 @@
 package hub
 
 import (
+	"log/slog"
+
 	"chat/internal/domain/models"
 	"github.com/gorilla/websocket"
-	"log/slog"
 )
 
 type Client struct {
@@ -45,21 +46,14 @@ func (c *Client) WriteMessage() {
 	defer func() {
 		c.Hub.Unregister <- c
 	}()
-	for {
-		select {
-		case message, ok := <-c.Send:
-			if !ok {
+	for message := range c.Send {
+		if message.Author != c.Username {
+			toSend := message.Author + ": " + string(message.Text)
+			err := c.Conn.WriteMessage(1, []byte(toSend))
+			if err != nil {
+				c.Hub.Log.Error("Error on writing message", slog.String("err", err.Error()))
 				break
 			}
-			if message.Author != c.Username {
-				toSend := message.Author + ": " + string(message.Text)
-				err := c.Conn.WriteMessage(1, []byte(toSend))
-				if err != nil {
-					c.Hub.Log.Error("Error on writing message", slog.String("err", err.Error()))
-					break
-				}
-			}
-
 		}
 	}
 }

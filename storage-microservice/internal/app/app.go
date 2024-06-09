@@ -2,15 +2,16 @@ package app
 
 import (
 	"context"
+	"log/slog"
+	"net/http"
+	"sync"
+
 	"github.com/IBM/sarama"
 	"hw3/internal/config"
 	"hw3/internal/kafka"
 	"hw3/internal/server"
 	service2 "hw3/internal/services"
 	"hw3/internal/storage/postgres"
-	"log/slog"
-	"net/http"
-	"sync"
 )
 
 type App struct {
@@ -39,14 +40,14 @@ func (a *App) Run(ctx context.Context) {
 	wg := &sync.WaitGroup{}
 
 	wg.Add(1)
-	consumer, err := kafka.RunConsumer(ctx, wg, a.cfg.Brokers, a.service)
+	consumer, err := kafka.RunConsumer(ctx, wg, a.log, a.cfg, a.service)
 	if err != nil {
 		panic(err)
 	}
 	defer func(consumer sarama.ConsumerGroup) {
 		err := consumer.Close()
 		if err != nil {
-			a.log.Error("error on closing consumer:", err)
+			a.log.Error("error on closing consumer:", slog.String("err", err.Error()))
 		}
 	}(consumer)
 
@@ -56,7 +57,6 @@ func (a *App) Run(ctx context.Context) {
 		}
 	}()
 	wg.Wait()
-
 }
 
 func (a *App) Stop(ctx context.Context) error {

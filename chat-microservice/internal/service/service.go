@@ -20,7 +20,8 @@ type MessagerService struct {
 func NewService(kafkaCh chan models.Message, messager storage.Messager) *MessagerService {
 	return &MessagerService{
 		kafkaCh:  kafkaCh,
-		messager: messager}
+		messager: messager,
+	}
 }
 
 func (s *MessagerService) SaveMessage(content []byte, author string) (models.Message, error) {

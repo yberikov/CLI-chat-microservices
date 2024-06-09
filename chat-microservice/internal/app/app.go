@@ -1,6 +1,11 @@
 package app
 
 import (
+	"context"
+	"log/slog"
+	"net/http"
+	"sync"
+
 	"chat/internal/config"
 	"chat/internal/domain/models"
 	"chat/internal/kafka"
@@ -8,10 +13,6 @@ import (
 	"chat/internal/server/hub"
 	service2 "chat/internal/service"
 	"chat/internal/storage/redis"
-	"context"
-	"log/slog"
-	"net/http"
-	"sync"
 )
 
 type App struct {
@@ -46,7 +47,7 @@ func New(log *slog.Logger, cfg *config.Config) *App {
 func (a *App) Run(ctx context.Context) {
 	err := a.service.FillCacheFromService(a.cfg.StorageMicroSrvAddr)
 	if err != nil {
-		a.log.Error("error on filling the cache", err)
+		a.log.Error("error on filling the cache", slog.String("err", err.Error()))
 	}
 	wg := &sync.WaitGroup{}
 
@@ -63,7 +64,6 @@ func (a *App) Run(ctx context.Context) {
 		}
 	}()
 	wg.Wait()
-
 }
 
 func (a *App) Stop(ctx context.Context) error {

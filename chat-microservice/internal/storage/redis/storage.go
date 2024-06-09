@@ -1,13 +1,15 @@
 package redis
 
 import (
-	"chat/internal/domain/models"
 	"context"
 	"encoding/json"
 	"fmt"
-	"github.com/redis/go-redis/v9"
 	"net/http"
 	"slices"
+
+	"chat/internal/domain/models"
+
+	"github.com/redis/go-redis/v9"
 )
 
 type MessageStorage struct {
@@ -15,7 +17,7 @@ type MessageStorage struct {
 }
 
 func New(addr string) (*MessageStorage, error) {
-	//TODO redis configuration
+	// TODO redis configuration
 	rdb := redis.NewClient(&redis.Options{
 		Addr: addr,
 	})

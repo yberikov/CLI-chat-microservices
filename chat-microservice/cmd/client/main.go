@@ -3,16 +3,16 @@ package main
 import (
 	"bufio"
 	"fmt"
-	"github.com/gorilla/websocket"
 	"log"
 	"os"
 	"os/signal"
 	"strings"
 	"syscall"
+
+	"github.com/gorilla/websocket"
 )
 
 func main() {
-
 	socketUrl := "ws://localhost:8080" + "/ws"
 	conn, _, err := websocket.DefaultDialer.Dial(socketUrl, nil)
 	if err != nil {

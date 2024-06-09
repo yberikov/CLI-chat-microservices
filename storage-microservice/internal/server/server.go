@@ -1,12 +1,13 @@
 package server
 
 import (
+	"log/slog"
+	"net/http"
+
 	"github.com/go-chi/chi/v5"
 	"hw3/internal/config"
 	"hw3/internal/server/handlers"
 	service2 "hw3/internal/services"
-	"log/slog"
-	"net/http"
 )
 
 func New(cfg *config.Config, log *slog.Logger, service *service2.MessagerService) *http.Server {

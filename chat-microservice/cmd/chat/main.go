@@ -1,14 +1,15 @@
 package main
 
 import (
-	"chat/internal/app"
-	"chat/internal/config"
 	"context"
 	"log/slog"
 	"os"
 	"os/signal"
 	"syscall"
 	"time"
+
+	"chat/internal/app"
+	"chat/internal/config"
 )
 
 func main() {
