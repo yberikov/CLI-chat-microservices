@@ -26,7 +26,7 @@ jobs:
       - name: Lint chat-microservice
         run: |
             cd chat-microservice
-            golangci-lint-action@v4 --version latest --args "--config=.golangci.yaml"
+            golangci-lint run --config=.golangci.yaml
 
       - name: Test chat-microservice
         run: |
@@ -42,8 +42,8 @@ jobs:
 
       - name: Lint storage-microservice
         run: |
-            cd chat-microservice
-            golangci-lint-action@v4 --version latest --args "--config=.golangci.yaml"
+            cd storage-microservice
+            golangci-lint run --config=.golangci.yaml
 
 
       - name: Test storage-microservice
