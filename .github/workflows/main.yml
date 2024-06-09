@@ -27,7 +27,7 @@ jobs:
         uses: golangci/golangci-lint-action@v4
         with:
           version: latest
-          args: --config=./chat-microservice/.golangci.yml
+          args: --config=./chat-microservice/.golangci.yaml
 
       - name: Test chat-microservice
         run: |
@@ -45,7 +45,7 @@ jobs:
         uses: golangci/golangci-lint-action@v4
         with:
           version: latest
-          args: --config=./storage-microservice/.golangci.yml
+          args: --config=./storage-microservice/.golangci.yaml
 
       - name: Test storage-microservice
         run: |
