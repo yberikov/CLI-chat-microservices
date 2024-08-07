@@ -1,4 +1,5 @@
-CLI Chat
+
+# CLI Chat
 
 ## How to get started
 1. Run docker-compose
